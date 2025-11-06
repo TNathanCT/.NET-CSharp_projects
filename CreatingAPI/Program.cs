@@ -1,166 +1,225 @@
-using System;
-using System.Collections.Generic;
+/*using Microsoft.OpenApi.Models;
+//using BestCricketers.Core.BL;  
+//using BestCricketers.Models;  
+using System;  
+//using System.LINQ;
+using System.Collections.Generic;  
+using System.Net;  
+using System.Net.Http;  
+//using System.Web.Http;  
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Enable Swagger for testing
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Swagger UI (always on for learning)
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
+
+// ====== In-memory “database” ======
+List<User> users = new()
+{
+    new User { Id = 1, Name = "Alice", Age = 30 },
+    new User { Id = 2, Name = "Bob", Age = 25 },
+    new User { Id = 3, Name = "Charlie", Age = 28 }
+};
+
+// ====== API ENDPOINTS ======
+
+// GET all users
+app.MapGet("/users", () => users)
+   .WithName("GetUsers")
+   .WithOpenApi();
+
+// GET a specific user
+app.MapGet("/users/{id}", (int id) =>
+{
+    var user = users.FirstOrDefault(u => u.Id == id);
+    return user is not null ? Results.Ok(user) : Results.NotFound();
+})
+.WithName("GetUserById")
+.WithOpenApi();
+
+// POST a new user
+app.MapPost("/users", (User newUser) =>
+{
+    newUser.Id = users.Max(u => u.Id) + 1;
+    users.Add(newUser);
+    return Results.Created($"/users/{newUser.Id}", newUser);
+})
+.WithName("CreateUser")
+.WithOpenApi();
+
+app.Run();
+
+// ====== Data model ======
+record User
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public int Age { get; set; }
+}
+
+
+public struct UserClassStruct{
+    public int Id { get; set;}
+    public string Name { get; set; }
+    public int Age { get; set; }
+
+
+    public UserClassStruct(int id, string name, int age){
+        Id = id;
+        Name = name;
+        Age = aging;
+    }
+}
+
+*/
+
+
+//TODO LIST
+//-------------------------------------------------------------------------------------------
+using System;  
+using System.Collections.Generic;  
+using System.Linq;
+using System.Text;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Collections;
+using Newtonsoft.Json;
+
+public class TodoClass{
+    public bool completed;
+    public string description;
+
+    public TodoClass(bool receivecompleted, string receivedescription){
+        this.completed = receivecompleted;
+        this.description = receivedescription;
+    }
+    public bool GetCompleted(){
+        return completed;
+    }
+    public string GetDescription(){
+        return description;
+    }
+}
 
 public class Program{
     
-    //the list of tasks we have saved
-    public List<TodoItem> taskList = new List<TodoItem>();
+    static Dictionary<int,TodoClass> todoListDictionary = new Dictionary<int,TodoClass>();
 
-    //the list of actions we can perform. Modify here to facilitate future additions
-    public List<string> modificationsPermitted = new List<string>(){"add" , "tick", "list", "rename"};
+    /*
+        5) Delete things to do
+        6) save in JSON
+    */
 
-
-   
     public static void Main(string[] args){
+       //BackToStart:
+        Console.WriteLine("What would you like to do? Add, Display, Change, Mark, Delete");
+        string chosen = Console.ReadLine()?.Trim().ToLower();
         
-        var program = new Program();
-        LoadFromFile();
 
-        while(true){
-            //this will need to slightly changed if we want to add future options.
-            Console.WriteLine("Do you wish to add new tasks or check the as complete? Please  type 'add', 'list', 'rename', 'quit', or 'tick'.");
-            var input = Console.ReadLine()?.Trim().ToLower();
+        switch(chosen){
+            case "add":
+                Add();
+                SaveToFile();
+                //goto BackToStart;
+                break;
+            case "display":
+                DisplayTasks();
+                break;
 
-            //prevent a null or wrong input
-            while(true){
-                if(input == null || string.IsNullOrEmpty(input)){
-                    Console.WriteLine("No input detected. Please Try again");
-                    continue;
-                }
-
-                if(program.modificationsPermitted.Contains(input)){
-                    break;
-                }
-                else{
-                    Console.WriteLine("Error: Wrote input. Please try again");
-                }
-
-            }
-
-
-
-        //this will also need to be changed.
-            switch(input){
-                case "add":
-                    program.AddTask();
-                    break;
-                case "list":
-                    program.DisplayList();
-                    break;
-
-                case "tick":
-                    program.CompleteTask();
-                    program.DisplayList();
-                    break;
-
-                case "rename":
-                    program.RenameTask();
-                    break;
-
-                case "quit":
-                    return;
-
-                default:
-                    break;
-
-            }
-        }   
-    }
-
-
-    public void AddTask(string defaultValue = "[Unnamed Task]"){
-        //ensure that the first three tasks are set.
-        if(taskList.Count == 0){
-            AddFirstThree();
-            return;//bypass the rest of the function
+            case "change":
+                Change();
+                SaveToFile();
+                break;
+            
+            case "mark":
+                MarkCompleted();
+                SaveToFile();
+                break;
+            
+            default:
+                break;
         }
 
-        Console.WriteLine("What should task number " + (taskList.Count+1) + " be ?");
-        var input = Console.ReadLine();
-        input = string.IsNullOrWhiteSpace(input) ? defaultValue : input.Trim();
-
-       //if(input != defaultValue){
-            taskList.Add(new TodoItem (input, false));
-            Console.WriteLine("Task Number " + taskList.Count + " added : " + input);
-        //}   
-
-        SaveToFile();
     }
 
-    public void RenameTask(){
-        Console.WriteLine("Which task to rename? Please provide the number.");
-        var input = Console.ReadLine();
-        int number = 1000;
+    static void Add(){
+        Start:
+        Console.WriteLine("Add a description of the task in question please.");
+        string descriptiongiven = Console.ReadLine();
+        if(String.IsNullOrEmpty(descriptiongiven)){
+            Console.WriteLine("You left it blank!");
+            goto Start;
+        }
+        bool displaycompleted = false; //it always starts as not completed.
+        
+        TodoClass todoList = new TodoClass(displaycompleted, descriptiongiven);
+        int numberOfKeys = todoListDictionary.Count;
+        todoListDictionary.Add(numberOfKeys + 1 , todoList);
+        DisplayTasks();
 
-        while (!int.TryParse(input, out number) || number < 0 || number >= taskList.Count)
-        {
-            Console.Write("This is not valid input. Please enter an integer value: ");
-            input = Console.ReadLine();
+    }
+
+    static void DisplayTasks(){
+        int dictionaryLength = todoListDictionary.Count;
+
+        if(dictionaryLength == 0){
+            Console.WriteLine("The list is empty! Add something!");
+            return;
         }
 
-        taskList[number].TaskName = Console.ReadLine();   
-        Console.WriteLine($"Task {number + 1} renamed to: {taskList[number].TaskName}");
-
-        SaveToFile();
-
-    }
-
-    public void AddFirstThree(string defaultValue = "[Unnamed Task]"){
-        for(int i = 0; i < 3; i++){
-            Console.WriteLine("Task Number " + (i+1) + " : What do you need to do");
-            var input = Console.ReadLine();
-            input = string.IsNullOrWhiteSpace(input) ? defaultValue : input.Trim();
-            taskList.Add(new TodoItem (input, false));
-            Console.WriteLine("Task Number " + (i+1) + " added. Add " + (3 - (i+1)) + " more");       
-        }     
-    }
-    
-
-
-    public void CompleteTask(){
-        Console.WriteLine("Which task is complete? Please provide the number.");
-        var input = Console.ReadLine();
-        int number = 1000;
-
-        while (!int.TryParse(input, out number) || number < 0 || number >= taskList.Count)
-        {
-            Console.Write("This is not valid input. Please enter an integer value: ");
-            input = Console.ReadLine();
-        }
-
-        taskList[number].IsDone = true;   
-
-        SaveToFile();
-    }
-
-    public void DisplayList(){
-        for(int i = 0; i <= taskList.Count-1; i++){
-            Console.WriteLine("Task number " + (i+1) + (taskList[i].IsDone ? "[X] " : "[ ] ") + taskList[i].TaskName);
+        for(int i = 1; i <= dictionaryLength; i++){
+            Console.WriteLine($"Task {i}: {todoListDictionary[i].description} - { (!todoListDictionary[i].completed ? "[ ]" : "[X]")}");
+       
         }
     }
 
-    public void SaveToFile(){
-        var json = JsonSerializer.Serialize(taskList, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText("todoReal.json", json);
+    static void Change(){
+        int result;
+        bool successfullyParsed;
+        Start:
+        Console.WriteLine("Type the number of the task you wish to change: ");
+        successfullyParsed = int.TryParse(Console.ReadLine(), out result);
+
+        if(!successfullyParsed){
+            Console.WriteLine("Please try again: ");
+            goto Start;
+        }
+        
+        Console.WriteLine("Write the new description:");
+        todoListDictionary[result].description = Console.ReadLine();
+        DisplayTasks();
     }
-    private List<TodoItem> LoadFromFile()
-    {
-        if (!File.Exists("todoReal.json")) return new List<TodoItem>();
 
-        var json = File.ReadAllText("todoReal.json");
-        return JsonSerializer.Deserialize<List<TodoItem>>(json) ?? new List<TodoItem>();
+    static void MarkCompleted(){
+        int result;
+        bool successfullyParsed;
+        Start:
+        Console.WriteLine("Type the number of the task you wish to change: ");
+        successfullyParsed = int.TryParse(Console.ReadLine(), out result);
+        if(!successfullyParsed){
+            Console.WriteLine("Please try again: ");
+            goto Start;
+        }
+
+        todoListDictionary[result].completed = true;
+        DisplayTasks();
     }
 
-}
-
-public class TodoItem{
-    public string TaskName { get; set;}
-    public bool IsDone{ get; set;}
-
-    public TodoItem(string name, bool done){
-        TaskName = name;
-        IsDone = done;
+    static void SaveToFile(){
+        string json = JsonConvert.SerializeObject(todoListDictionary);
+        System.IO.File.WriteAllText("/Users/thomas/Dev/simplifiedbackend/data.txt",json);
     }
+
+
+
 }
