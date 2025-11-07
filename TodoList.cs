@@ -110,7 +110,7 @@ public class TodoItem{
         this.completed = true;
     }
     public virtual string Render(){
-        return $"{(completed ? "[X]" : "[ ]")} {description}";
+        return $"{(completed ? "[X]" : "[ ]")} {description} - it is blank";
     }
 }
 
@@ -120,17 +120,15 @@ public class TodoDate : TodoItem{
     public TodoDate(int receiveid, bool receivecompleted, string receivedescription, DateTime receivedduedate) : base(receiveid, receivecompleted, receivedescription){
         this.dueDate = receivedduedate;
     }
+    //The base proves that this constructor is derived of the todoitem
 
     public override string Render(){
         string status = $"{(completed ? "[X]" : "[ ]")} {description}";
-        string overdue = (!completed && dueDate < DateTime.Today) ? " OVERDUE" : "";
+        string overdue = (!completed && dueDate < DateTime.Today) ? " OVERDUE" : " You still have time";
 
         return $@"{status} {description} - due {dueDate:yyyy-MM-dd}{overdue}";
     }
 }
-
-
-
 
 
 public class TodoManager{
@@ -148,45 +146,36 @@ public class TodoManager{
         
         TodoItem todoitem = new TodoItem(1, displaycompleted, descriptiongiven);
         int numberOfKeys = todoListDictionary.Count;
+        bool successfullyConverted = false;
+
         todoListDictionary.Add(numberOfKeys + 1 , todoitem);
-
-
         Console.WriteLine("Do you want to add a Due date?");
         string answer = Console.ReadLine()?.Trim()?.ToLower();
         if(answer == "yes"){
             DateTime due;
-            bool successfullyConverted = false;
-
             while(successfullyConverted == false){
                 try{
                     Console.WriteLine("Choose your due date. Set the format to yyyy-MM-dd please.");
                     answer = Console.ReadLine();
                     due = ConvertToDate(answer);
 
-                    todoListDictionary[result] = new TodoItem(todoListDictionary[result].id, todoListDictionary[result].completed, todoListDictionary[result].description, due);
-                    successfullyconverted = true;
+                    todoListDictionary[numberOfKeys+1] = new TodoDate(todoListDictionary[numberOfKeys+1].id, todoListDictionary[numberOfKeys+1].completed, todoListDictionary[numberOfKeys+1].description, due);
+                    successfullyConverted = true;
 
                 }catch(FormatException){
                     Console.WriteLine("Wrong format, please try again.");
                 }
             }
+        }
         Console.WriteLine("Displaying Tasks");
         DisplayTasks();
     }
 
     
     public void DisplayTasks(){
-
-        /*
-        int dictionaryLength = todoListDictionary.Count;
-
-        if(dictionaryLength == 0){
-            Console.WriteLine("The list is empty! Add something!");
-            return;
-        }
-        */
         foreach(var item in todoListDictionary){
-            //Console.WriteLine($"Task {i}: {todoListDictionary[i].description} - { (!todoListDictionary[i].completed ? "[ ]" : "[X]")}");
+            //All ToDoItems will have blank 
+            //all ToDoDates will have notes
             Console.WriteLine($"{item.Key}: {item.Value.Render()}");
         }
     }
@@ -246,11 +235,6 @@ public class TodoManager{
         string[] format = {"yyyy-MM-dd"}; 
         return DateTime.ParseExact(date, format, null, System.Globalization.DateTimeStyles.None);
     }
-
-
-    
-
-
     public void MarkCompleted(){
         int result;
         bool successfullyParsed;
@@ -269,6 +253,8 @@ public class TodoManager{
 
 /*public interface SavingTask{
     void CheckTaskDescription();
+    Essentially this contains the function, but we can edit it in different classes.
+    Use virtual methods - do not need to add details and an excellent example of polymophism
 }
 */
 
