@@ -10,6 +10,8 @@ using System.Collections;
 using Newtonsoft.Json;
 using Microsoft.OpenApi.Models;
 using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
 
 
 
@@ -193,7 +195,15 @@ public class Program{
 
     public static async Task Main(string[] args){
 
-        
+        //This creates 
+        CancellationTokenSource tokenSource = new CancellationTokenSource();
+        CancellationToken token = tokenSource.token;
+        //CancellationToken.IsCancellationRequested -> check for cancellation requests and stop running if it returns true
+        //To verify that the cancellation token is working
+
+        await CancelTesting(token);
+
+
 
         using HttpClient client = new(); 
         //clear the current header of all default options
@@ -265,5 +275,19 @@ public class Program{
         var jsondata = await client.GetStringAsync(stringRequest);
 
         Console.Write(jsondata);
+    }
+
+
+
+    static Task<T> CancelTesting(CancellationToken ct){
+        var keyInfo = ReadKey(true);
+        while(ct.IsCancellationRequested == false){
+            Console.WriteLine("Press c to cancel this loop");
+            if(keyInfo.KeyCar == "C"){
+                Console.WriteLine("Ending attempt");
+                ct.Cancel();
+            }
+
+        }
     }
 }
