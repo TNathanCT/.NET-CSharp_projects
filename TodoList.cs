@@ -1,90 +1,4 @@
-/*using Microsoft.OpenApi.Models;
-//using BestCricketers.Core.BL;  
-//using BestCricketers.Models;  
-using System;  
-//using System.LINQ;
-using System.Collections.Generic;  
-using System.Net;  
-using System.Net.Http;  
-//using System.Web.Http;  
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Enable Swagger for testing
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Swagger UI (always on for learning)
-app.UseSwagger();
-app.UseSwaggerUI();
-
-app.UseHttpsRedirection();
-
-// ====== In-memory “database” ======
-List<User> users = new()
-{
-    new User { Id = 1, Name = "Alice", Age = 30 },
-    new User { Id = 2, Name = "Bob", Age = 25 },
-    new User { Id = 3, Name = "Charlie", Age = 28 }
-};
-
-// ====== API ENDPOINTS ======
-
-// GET all users
-app.MapGet("/users", () => users)
-   .WithName("GetUsers")
-   .WithOpenApi();
-
-// GET a specific user
-app.MapGet("/users/{id}", (int id) =>
-{
-    var user = users.FirstOrDefault(u => u.Id == id);
-    return user is not null ? Results.Ok(user) : Results.NotFound();
-})
-.WithName("GetUserById")
-.WithOpenApi();
-
-// POST a new user
-app.MapPost("/users", (User newUser) =>
-{
-    newUser.Id = users.Max(u => u.Id) + 1;
-    users.Add(newUser);
-    return Results.Created($"/users/{newUser.Id}", newUser);
-})
-.WithName("CreateUser")
-.WithOpenApi();
-
-app.Run();
-
-// ====== Data model ======
-record User
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = "";
-    public int Age { get; set; }
-}
-
-
-public struct UserClassStruct{
-    public int Id { get; set;}
-    public string Name { get; set; }
-    public int Age { get; set; }
-
-
-    public UserClassStruct(int id, string name, int age){
-        Id = id;
-        Name = name;
-        Age = aging;
-    }
-}
-
-*/
-
-
-//TODO LIST
-//-------------------------------------------------------------------------------------------
+using Microsoft.OpenApi.Models;
 using System;  
 using System.Collections.Generic;  
 using System.Linq;
@@ -94,6 +8,17 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections;
 using Newtonsoft.Json;
+using Microsoft.OpenApi.Models;
+using System.Net.Http.Headers;
+
+
+
+
+
+
+//TODO LIST
+//-------------------------------------------------------------------------------------------
+
 
 public class TodoItem{
     public bool completed;
@@ -257,16 +182,35 @@ public class TodoManager{
     Use virtual methods - do not need to add details and an excellent example of polymophism
 }
 */
-
-
+    
 
 public class Program{
     
 
     public TodoManager manager = new TodoManager();
+    
 
-    public static void Main(string[] args){
+
+    public static async Task Main(string[] args){
+
+        
+
+        using HttpClient client = new(); 
+        //clear the current header of all default options
+        client.DefaultRequestHeaders.Accept.Clear();
+        //Add the "I want the response in GitHub’s v3 API JSON format" header
+        //MediaTypeWithQualityHeaderValue is a helper class representing a single media type like application/json
+        //client.DefaultRequestHeaders.Accept.Add( new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json")); 
+        //So github requires a user agent is all API requests, the next line identifies your app or script
+        //client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter");
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        client.DefaultRequestHeaders.Add("User-Agent", "Swagger Todo List");
+        //Await here will pause the execution until the GetDataFromAPI is complete
+        await GetDataFromBackEnd(client);
+
+
         Program pro = new Program();
+
         pro.RunProgram();       
     }
 
@@ -300,7 +244,9 @@ public class Program{
         }
         goto BackToStart;
 
+        
     }
+
 
     
     void SaveToFile(){
@@ -309,4 +255,15 @@ public class Program{
     }
 
 
+     //async makes it clear it is asynchronous - it will run in background while frontend works.
+    //The Task is the return type
+    static async Task GetDataFromBackEnd(HttpClient client){
+       
+       // var data = await GetDataFromAPI();
+        string stringRequest = "http://localhost:5184/todos";
+        //Send a GET request to the specified URI and return the response body as a string in an asynchronous operation.
+        var jsondata = await client.GetStringAsync(stringRequest);
+
+        Console.Write(jsondata);
+    }
 }
