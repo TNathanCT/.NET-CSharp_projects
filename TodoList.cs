@@ -268,13 +268,32 @@ public class Program{
      //async makes it clear it is asynchronous - it will run in background while frontend works.
     //The Task is the return type
     static async Task GetDataFromBackEnd(HttpClient client){
-       
+       //.waitall -> wait for all async tasks to be done (they can run alongside one another)
        // var data = await GetDataFromAPI();
-        string stringRequest = "http://localhost:5184/todos";
-        //Send a GET request to the specified URI and return the response body as a string in an asynchronous operation.
-        var jsondata = await client.GetStringAsync(stringRequest);
+       //task.delay(int) -> same as WaitForSeconds -> but with miliseconds
 
-        Console.Write(jsondata);
+/*
+        public async Task FetchDataAsync(){
+            var producttask = FetchProductAsync();
+            var productreviews = FetchReviewAsyn();
+            await Task.WaitAll(producttask, productreviews);
+        }
+*/
+
+
+
+
+        string stringRequest = "http://localhost:5184/todos";
+       
+        try{
+            //Send a GET request to the specified URI and return the response body as a string in an asynchronous operation.
+            var jsondata = await client.GetStringAsync(stringRequest);
+
+            Console.Write(jsondata);
+        }catch(HttpRequestException ex){ //-> this is how we catch error gracefully
+            Console.WriteLine($"Request Error: {ex.Message}");
+            //you can return something so that the appication does not crash
+        }
     }
 
 
