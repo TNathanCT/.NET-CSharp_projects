@@ -280,9 +280,6 @@ public class Program{
         }
 */
 
-
-
-
         string stringRequest = "http://localhost:5184/todos";
        
         try{
