@@ -16,8 +16,6 @@ using System.Threading.Tasks;
 
 
 
-
-
 //TODO LIST
 //-------------------------------------------------------------------------------------------
 
@@ -218,6 +216,9 @@ public class Program{
         //Await here will pause the execution until the GetDataFromAPI is complete
         await GetDataFromBackEnd(client);
 
+        //Below tosses this into a new thread - but only for CPU Heavy work.
+        //Task.Run(async() => await  GetDataFromBackEnd(client));
+
 
         Program pro = new Program();
 
@@ -272,6 +273,19 @@ public class Program{
        // var data = await GetDataFromAPI();
        //task.delay(int) -> same as WaitForSeconds -> but with miliseconds
 
+       //When you use Task.WhenAll to wait for multiple tasks, if any of those tasks fail 
+       //(throw an unhandled exception), Task.WhenAll will throw an exception itself. 
+       //The key is that it will aggregate all the exceptions from the failed tasks into a single AggregateException.
+
+       /*
+       Inside that catch block, you can then iterate through the InnerExceptions property of the AggregateException to see all the individual errors that occurred and handle them as needed.
+
+        So, to summarize, you'd use a try-catch block around your await Task.WhenAll() call, and specifically catch the AggregateException to manage errors from multiple concurrent tasks.
+        
+        
+        Beware concurrency issues(race conditions), so debugging
+        */
+
 /*
         public async Task FetchDataAsync(){
             var producttask = FetchProductAsync();
@@ -287,6 +301,7 @@ public class Program{
             var jsondata = await client.GetStringAsync(stringRequest);
 
             Console.Write(jsondata);
+            throw new Exception("Untested code");
         }catch(HttpRequestException ex){ //-> this is how we catch error gracefully
             Console.WriteLine($"Request Error: {ex.Message}");
             //you can return something so that the appication does not crash
