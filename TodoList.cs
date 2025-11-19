@@ -309,7 +309,6 @@ public class Program{
     }
 
 
-
     static Task<T> CancelTesting(CancellationToken ct){
         var keyInfo = ReadKey(true);
         while(ct.IsCancellationRequested == false){
