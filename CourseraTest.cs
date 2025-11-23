@@ -93,16 +93,12 @@ public class Program
                 if(available){
 
                 }
-
-
-
+                
             default:
                 Console.WriteLine("Improper input, please try again");
                 break;
 
         }
-
-
         }
     }
 
@@ -171,13 +167,7 @@ public class Program
                    users[i].borrowedList = bookborrowed;
                 }
             }
-        }
-
-
-
-       
-
-        
+        }        
     }
 
 
@@ -199,9 +189,7 @@ public class Program
             new Product("Reusable Straw")
         };
     }
-
-
-
+    
     // Asynchronous method to display product data
     public async Task DisplayProductsAsync()
     {
@@ -211,9 +199,6 @@ public class Program
             Console.WriteLine(product.Name);
         }
     }
-
-
-    
 
     // Main entry point
     public static async Task Main(string[] args)
