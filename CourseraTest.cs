@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 public class Person
 {
     public string username { get; set; }
@@ -5,174 +9,208 @@ public class Person
 
     public Person(string name, List<string> borrowedList)
     {
-        usersname = name;
+        username = name;
         booksborrowed = borrowedList;
     }
 }
 
-
 public class Program
 {
-    public List<string> booktitleList  = new List<string>();
-    bool available;
-    public List<Person> users = new List<Person>();
+    public static List<string> booktitleList  = new List<string>();
+    static bool available;
+    public static List<Person> users = new List<Person>();
 
-
-    public static void Main(string[] args){
+    public static void Main(string[] args)
+    {
         Program program = new Program();
         bool runapp = true;
 
+        while (runapp)
+        {
+            Console.WriteLine("Welcome to the library, What would you like to do? Add, Remove, Display, Search, Borrow, Return or Exit?");
+            string result = Console.ReadLine()?.Trim().ToLower();
 
-        while(runapp == true){
-            if(runapp = false){
-                break;
-            }
-
-       
-        Console.WriteLine("Welcome to the library, What would you like to do? Add, Remove, Display, Search, Borrow, or Exit?");
-        string result = Console.ReadLine()?.Trim().ToLower();
-
-        switch(result){
-            case "add":
-                if(booktitleList.Count < 5){      
-                    Start:
-                    Console.WriteLine("Add the name of the Book Title: ");
-                    result = Console.ReadLine();
-                    if(string.IsNullOrEmpty(result)){
-                        Console.WriteLine("Error, please add name of book");
-                        goto Start;
+            switch (result)
+            {
+                case "add":
+                    if (booktitleList.Count < 5){
+                        result = Prompt("Add the name of the Book Title: ");
+                        program.Add(result);
                     }
-                    program.Add(result);        
-                }
-                else{
-                    Console.WriteLine("The Library is full");
-                }
-                break;
-            
-            case "remove":
-                Start:
-                Console.WriteLine("Remove the name of the Book Title:");
-                result = Console.ReadLine();
-                if(string.IsNullOrEmpty(result)){
-                    Console.WriteLine("Error, please add name of book");
-                    goto Start;
-                }
-                program.Remove(result);
-                break;
+                    else{
+                        Console.WriteLine("The Library is full");
+                    }
+                    break;
 
-            case "display":
-                program.Display();
-                break;
+                case "remove":
+                    result = Prompt("Remove the name of the Book Title:");
+                    program.Remove(result);
+                    break;
 
+                case "display":
+                    program.Display();
+                    break;
 
-            case "exit":
-                runapp = false;
-                break;
+                case "exit":
+                    runapp = false;
+                    break;
 
-            case "search":
-                Start:
-                Console.WriteLine("Give the name of the Book Title to search:");
-                result = Console.ReadLine();
-                if(string.IsNullOrEmpty(result)){
-                    Console.WriteLine("Error, please add name of book");
-                    goto Start;
-                }
-                available = SearchBook(result);
-                break;
+                case "search":
+                    result = Prompt("Give the name of the Book Title to search:");
+                    available = program.SearchBook(result);
+                    break;
 
-            case "borrow":
-                Start:
-                Console.WriteLine("Give the name of the Book Title to search:");
-                result = Console.ReadLine();
-                if(string.IsNullOrEmpty(result)){
-                    Console.WriteLine("Error, please add name of book");
-                    goto Start;
-                }
-                available = SearchBook(result);
+                case "borrow":
+                    result = Prompt("Give the name of the Book Title to borrow:");
+                    available = program.SearchBook(result);
+                    if (available){
+                        program.BorrowBook(result);
+                    }
+                    else{
+                        Console.WriteLine("Error, book missing from collection, please add name of book");
+                    }
+                    break;
 
-                if(available){
+                case "return":
+                        string name = Prompt("Please give us your username:");
+                        program.CheckInBook(name);
+                        break;
 
-                }
-                
-            default:
-                Console.WriteLine("Improper input, please try again");
-                break;
-
-        }
+                default:
+                    Console.WriteLine("Improper input, please try again");
+                    break;
+            }
         }
     }
 
-    public void Add(string name){
+    static string Prompt(string message){
+        string s = "";
+        while (string.IsNullOrWhiteSpace(s)){
+            Console.WriteLine(message);
+            s = Console.ReadLine()?.Trim();
+        }
+        return s;
+    }
+
+    public void CheckInBook(string name){
+        foreach (Person user in users){
+            if (user.username == name){
+                string booktitle = "";
+                while (string.IsNullOrEmpty(booktitle)){
+                    Console.WriteLine("Please tell us the book you wish to return");
+                    booktitle = Console.ReadLine()?.Trim();
+
+                    if (user.booksborrowed.Contains(booktitle, StringComparer.OrdinalIgnoreCase)){
+                        user.booksborrowed.Remove(booktitle);
+                        booktitleList.Add(booktitle);
+                        Console.WriteLine("Book checked in");
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("You don't have that book borrowed. Try again.");
+                        booktitle = "";
+                    }
+                }
+            }
+        }
+    }
+
+    public void Add(string name)
+    {
         booktitleList.Add(name);
     }
 
-    public void Remove(string name){
-        if(booktitleList.Count == null){
+    public void Remove(string name)
+    {
+        if (booktitleList.Count == 0)
+        {
             Console.WriteLine("Library is Empty");
             return;
         }
 
-
-        for(int i = 0;i<booktitleList.Count-1; i++){
-            if(booktitleList[i] == name){
+        for (int i = 0; i < booktitleList.Count; i++)
+        {
+            if (string.Equals(booktitleList[i], name, StringComparison.OrdinalIgnoreCase))
+            {
                 booktitleList.RemoveAt(i);
                 Console.WriteLine("Book removed");
-            }
-            if(i == 5){
-                Console.WriteLine("Book name not found in library");
+                return;
             }
         }
+
+        Console.WriteLine("Book name not found in library");
     }
-    public void Display(){
-        for(int i = 0; i<booktitleList.Count; i++){
+
+    public void Display()
+    {
+        if (booktitleList.Count == 0)
+        {
+            Console.WriteLine("Library is Empty");
+            return;
+        }
+
+        for (int i = 0; i < booktitleList.Count; i++)
+        {
             Console.WriteLine($"{i}) {booktitleList[i]}");
         }
     }
 
-    public bool SearchBook(string name){
-        for(int i = 0;i<booktitleList.Count-1; i++){
-            if(booktitleList[i] == name){
-                Console.WriteLine("The Book does exist in the library");
+    public bool SearchBook(string name)
+    {
+        foreach (string title in booktitleList)
+        {
+            if (string.Equals(title, name, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("The Book is available");
                 return true;
             }
-            if(i == 5){
-                Console.WriteLine("Book name not found in library");
-                return false;
-            }
         }
+
+        Console.WriteLine("Book is not available.");
+        return false;
     }
 
-    public void BorrowBook(string bookname){
-        string name;
+    public void BorrowBook(string bookname)
+    {
+        string name = "";
         List<string> bookborrowed = new List<string>();
-        while(string.IsNullOrEmpty(name)){
+
+        while (string.IsNullOrEmpty(name))
+        {
             Console.WriteLine("Please give us your username");
             name = Console.ReadLine()?.Trim();
-            if(!string.IsNullOrEmpty(name)){
-                break;
-            }
         }
 
-        if(users.Count == null){
-            bookborrowed.Add(bookname);
-            Person newPerson = new Person(name, bookborrowed);
-            users.Add(newPerson);
+        // find existing user if any
+        Person user = users.FirstOrDefault(u => u.username.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+        if (user == null)
+        {
+            user = new Person(name, new List<string>());
+            users.Add(user);
         }
 
-        else{
-            for(int i = 0; i < users.Count-1;i++){
-                if(users[i].name == name){
-                   bookborrowed = users[i].borrowedList;
-                   bookborrowed.Add(bookname);
-                   users[i].borrowedList = bookborrowed;
-                }
-            }
-        }        
+        if (user.booksborrowed.Count >= 3)
+        {
+            Console.WriteLine("This user cannot borrow more books.");
+            return;
+        }
+
+        // remove book from library and add to user
+        int index = booktitleList.FindIndex(b => b.Equals(bookname, StringComparison.OrdinalIgnoreCase));
+        if (index >= 0)
+        {
+            booktitleList.RemoveAt(index);
+            user.booksborrowed.Add(bookname);
+            Console.WriteLine("Book checked out");
+        }
+        else
+        {
+            Console.WriteLine("Book is not available!");
+        }
     }
-
-
-
-
+}
 
 
 
@@ -189,7 +227,9 @@ public class Program
             new Product("Reusable Straw")
         };
     }
-    
+
+
+
     // Asynchronous method to display product data
     public async Task DisplayProductsAsync()
     {
@@ -199,6 +239,9 @@ public class Program
             Console.WriteLine(product.Name);
         }
     }
+
+
+    
 
     // Main entry point
     public static async Task Main(string[] args)
