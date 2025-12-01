@@ -213,9 +213,6 @@ public class Program
 }
 
 
-
-
-
     /*
     // Asynchronous method to fetch product data
     public async Task<List<Product>> FetchProductsAsync()
