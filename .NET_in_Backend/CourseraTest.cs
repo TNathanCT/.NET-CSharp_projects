@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using System.Xml;
 using Newtonsoft.Json;
+
 public class Product
 {
     public string name {get ; set; }
@@ -11,15 +12,8 @@ public class Product
 
 public class Program
 {
-    
     public static void Main()
     {
-        /*
-        string json = "{\"name\":\"Laptop\", \"price\":99.99, \"tags\": [\"Electronics\",\"Computers\"]}";
-        Product product = JsonConvert.DeserializeObject<Product>(json);
-        Console.WriteLine($"Product: {product.name}, Price: {product.price}, tags: {string.Join(", ", product.tags)}");
-        */
-
         Product newproduct = new Product
         {
             name = "SmartPhone",
