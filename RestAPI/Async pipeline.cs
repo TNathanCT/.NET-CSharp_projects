@@ -3,6 +3,9 @@ using System.Security.Cryptography;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using System.Runtime.InteropServices.Swift;
+using System.Reflection.Metadata;
 
 public sealed class FetchHasher
 {
@@ -100,3 +103,71 @@ public sealed record FetchResult(
     int? ByteCount,
     int? StatusCode,
     string? Error);
+
+
+
+    //-------------------------------------------------------------------
+
+
+
+
+public class Datafiltering
+{
+
+    List<int> numList = new List<int>{5, 12, 7, 20, 3, 18};
+
+    List<int> OrganisedList(List<int> numbers)
+    {
+
+            return numbers.Where(n => n > 10)
+            .OrderBy(n => n)
+            .ToList();
+        /*
+        numbers.OrderBy(i => i).ToList();
+        for(int i = 0; i<= numbers.Count-1; i++)
+        {
+            if(numbers[i] < 10)
+            {
+                numbers.RemoveAt(i);
+            }
+        }
+        return numbers;
+        */
+
+    }
+
+
+    string GetUserRole(int age)
+    {  
+
+        switch (age)
+        {
+            case <= 0:
+                return "Invalid age";
+
+            case int i when i > 0 && i < 13:
+                return "Child";
+
+            case int i when i >= 13 && i <= 17:
+                return "Teenager";
+
+            case int i when i >= 18 && i <= 64:
+                return "Adult";
+
+            case int i when i > 64:
+                return "Senior";
+
+            default:
+                return "error, wrong input";
+        }
+
+    }
+
+    User GetUserByName(string name)
+}
+
+public class User{
+        public string Name;
+        public int Age;
+}
+
