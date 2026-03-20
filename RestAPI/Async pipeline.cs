@@ -6,6 +6,7 @@ using System.Text;
 using System.Linq;
 using System.Runtime.InteropServices.Swift;
 using System.Reflection.Metadata;
+using System.Diagnostics;
 
 public sealed class FetchHasher
 {
@@ -160,11 +161,38 @@ public class Datafiltering
             default:
                 return "error, wrong input";
         }
-
     }
 
-    User GetUserByName(string name)
-}
+
+    List<User> users = new List<User>(){
+        new User { Name = "Alice", Age = 30 },
+        new User { Name = "Bob", Age = 15 },
+        new User { Name = "Charlie", Age = 70 }
+    };
+
+    User? GetUserByName(string? nam)
+    {
+        bool finishedrun = false;
+        if (String.IsNullOrEmpty(nam))
+        {
+            Console.WriteLine("Enter a name please");
+            return null;
+        }
+
+        string name = nam.Trim();
+        for (int i = 0; i <= users.Count-1; i++)
+        {
+            if(String.Equals(users[i].Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"User name is : {users[i].Name}, and their age is : {users[i].Age}");
+                return users[i];
+            }
+        }
+        Console.WriteLine("Error - name is not in Database");
+        return null;
+
+    }
+}|
 
 public class User{
         public string Name;
