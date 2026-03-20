@@ -86,16 +86,10 @@ public sealed class FetchHasher
             {
                 builder.Append(bytes[i].ToString("x2"));
             } 
-
             return builder.ToString();
         }
     }
-    
-
 }
-
-
-
 
 public sealed record FetchResult(
     Uri Uri,
@@ -123,20 +117,8 @@ public class Datafiltering
             return numbers.Where(n => n > 10)
             .OrderBy(n => n)
             .ToList();
-        /*
-        numbers.OrderBy(i => i).ToList();
-        for(int i = 0; i<= numbers.Count-1; i++)
-        {
-            if(numbers[i] < 10)
-            {
-                numbers.RemoveAt(i);
-            }
-        }
-        return numbers;
-        */
 
     }
-
 
     string GetUserRole(int age)
     {  
@@ -157,22 +139,19 @@ public class Datafiltering
 
             case int i when i > 64:
                 return "Senior";
-
             default:
                 return "error, wrong input";
         }
     }
 
-
     List<User> users = new List<User>(){
         new User { Name = "Alice", Age = 30 },
         new User { Name = "Bob", Age = 15 },
-        new User { Name = "Charlie", Age = 70 }
+        new User { Name = "Charlie", Age = 70 } 
     };
 
     User? GetUserByName(string? nam)
     {
-        bool finishedrun = false;
         if (String.IsNullOrEmpty(nam))
         {
             Console.WriteLine("Enter a name please");
@@ -184,18 +163,122 @@ public class Datafiltering
         {
             if(String.Equals(users[i].Name, name, StringComparison.OrdinalIgnoreCase))
             {
-                Console.WriteLine($"User name is : {users[i].Name}, and their age is : {users[i].Age}");
                 return users[i];
             }
         }
-        Console.WriteLine("Error - name is not in Database");
         return null;
-
     }
-}|
+
+
+    string RegisterUser(List<User> users, string name, string email, int age, string password)
+    {
+        if(String.IsNullOrEmpty(name))
+        {
+            return "Name is required";
+        }
+        
+        if(!IsValidEmail(email))
+        {
+            return "Email is invalid";
+        }
+
+        if(GetUserRole(age) != "Senior" && GetUserRole(age) != "Adult")
+        {
+            return "User must be at least 18";
+        }
+
+        if(EmailExists(users, email))
+        {
+            return "Email already exists";
+        }
+
+
+    
+        users.Add(new User{Name = name.Trim(), Age = age, Email = email.Trim(), Passwordhash = HashPassword(password)});
+        UserDto? dto = GetUserDtoByEmail(users, email);
+        
+        if (dto != null)
+        {
+            Console.WriteLine(dto.Name);
+            Console.WriteLine(dto.Email);
+        }
+
+
+        return "User registered";
+    }
+
+    public string HashPassword(string pass)
+    {
+        using(SHA256 hash = SHA256.Create())
+        {
+            byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(pass));
+            StringBuilder builder = new StringBuilder();
+            for(int i = 0; i< bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
+
+
+
+    UserDto? GetUserDtoByEmail(List<User> users, string email)
+    {
+        if(EmailExists(users, email) == false)
+        {
+            return null;
+        }
+        else
+        {
+            for(int i = 0; i <= users.Count-1; i++)
+            {
+                if(users[i].Email == email)
+                {
+                    UserDto newDTO = new UserDto{Name =users[i].Name, Email =users[i].Email};
+                    return newDTO;
+                }
+            }
+            return null;
+        }
+        
+    }
+
+
+
+
+    public bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)){
+            return false;
+        }
+
+        return email.Contains("@") && email.Contains(".") && !email.Any(char.IsWhiteSpace);
+    }
+
+    public bool EmailExists(List<User> users, string email){
+    for (int i = 0; i < users.Count; i++)
+    {
+        if (string.Equals(users[i].Email, email, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+}
 
 public class User{
         public string Name;
         public int Age;
+        public string Email;
+        public string Passwordhash;
+}
+
+public class UserDto
+{
+    public string Name;
+    public string Email;
 }
 
