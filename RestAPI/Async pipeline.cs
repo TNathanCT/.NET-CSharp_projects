@@ -7,7 +7,10 @@ using System.Linq;
 using System.Runtime.InteropServices.Swift;
 using System.Reflection.Metadata;
 using System.Diagnostics;
-
+using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel.Design;
+using System.Reflection.Metadata.Ecma335;
+/*
 public sealed class FetchHasher
 {
     private readonly HttpClient _http; // - only one at a time
@@ -100,11 +103,11 @@ public sealed record FetchResult(
     string? Error);
 
 
+*/
+//-------------------------------------------------------------------
 
-    //-------------------------------------------------------------------
 
-
-
+/*
 
 public class Datafiltering
 {
@@ -280,5 +283,186 @@ public class UserDto
 {
     public string Name;
     public string Email;
+}  
+*/
+
+
+
+
+
+
+
+
+
+
+
+public class DTOExercise
+{
+    List<User> users = new List<User>();
+
+    public string RegisterUser(List<User> users, string name, string email, int age, string password)
+    {
+        User newUser = new User(name, email, age, HashPassword(password));
+        users.Add(newUser);
+        Console.WriteLine("User registered");
+        return "Registration Successful!";
+    }
+    public string ValidateName()
+    {
+        Console.WriteLine("Please type in your name: ");
+        Start:
+        string username = Console.ReadLine();
+        if (string.IsNullOrEmpty(username))
+        {
+            Console.WriteLine("Name cannot be null or empty. Please try again:");
+            goto Start;
+        }
+        Console.WriteLine("Name Accepted!");
+        return username;
+    }
+    public string ValidateEmail()
+    {
+       
+        bool isemailcorrect = false;
+        while (isemailcorrect == false)
+        {
+            Console.WriteLine("Please type in your email: ");
+            string email = Console.ReadLine();
+            if (string.IsNullOrEmpty(email) || email.Any(x => Char.IsWhiteSpace(x)))
+            {
+                Console.WriteLine("Email cannot be null or have spaces");
+                continue;
+            }
+            if (!email.Contains("@"))
+            {
+                Console.WriteLine("Email Invalid");
+                continue;
+            }
+            if (!email.Contains("."))
+            {
+                Console.WriteLine("Email Invalid");
+                continue;
+            }
+            if(!EmailIsAvailable(users, email))
+            {
+                Console.WriteLine("Email in use");
+                continue;
+            }
+           
+            return email;
+        }  
+    }
+    public int ValidateAge()
+    {
+        begin:
+        Console.WriteLine("How old are you: ");
+        int age = int.Parse(Console.ReadLine());
+        switch (age)
+        {
+            case <= 17:
+                Console.WriteLine("You must be 18 or older to enter the website.");
+                goto  begin;
+            case int i when i > 17 && i < 64:
+                Console.WriteLine("You are an adult");
+                break;
+            case int i when i > 63:
+                Console.WriteLine("You are senior");
+                break;
+        }
+        return age;
+    }
+    public string ValidatePassword()
+    {
+        StartPass:
+        Console.WriteLine("Please write your passeword: ");
+        string password = Console.ReadLine();
+        if(string.IsNullOrEmpty(password) || password.Any(x => Char.IsWhiteSpace(x)))
+        {
+            Console.WriteLine("Password is invalid. Please do not have any spaces");
+            goto StartPass;
+        }  
+        return password;      
+
+    }
+    public bool EmailIsAvailable(List<User> users, string email)
+    {
+        for(int i = 0; i<= users.Count-1; i++)
+        {
+            if(String.Equals(users[i].Email, email, StringComparison.OrdinalIgnoreCase)){
+                Console.WriteLine("Email is already in use");
+                return false;
+            }
+        }
+        return true;
+    }
+    public void RegisterPage()
+    {
+        string name = ValidateName();
+        string email = ValidateEmail();
+        int age = ValidateAge();
+        string password = ValidatePassword();
+        RegisterUser(users, name, email, age, password);
+    }
+    public string HashPassword(string password)
+    {
+        using (SHA256 hash = SHA256.Create()){
+            byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+            StringBuilder builder = new StringBuilder();
+            for(int i = 0; i<bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
+
+    UserDto? GetUserDtoByEmail(List<User> users, string email)
+    {
+        if (string.IsNullOrEmpty(email))
+        {
+            Console.WriteLine("The email you put in is empty");
+            return null;    
+        }
+        for(int i = 0; i <= users.Count-1; i++)
+        {
+            if(string.Equals(users[i].Email, email, StringComparison.OrdinalIgnoreCase))
+            {
+                UserDto userdto = new UserDto(users[i].Name ,users[i].Email);
+                return userdto;
+            }
+        }
+        return null;
+    }
+
+   
+
+   
 }
+
+public class User
+{
+    public string Name;
+    public string Email;
+    public int Age;
+    public string PasswordHash;
+     public User (string name, string email, int age, string passhas)
+    {
+        Name = name;
+        Email = email;
+        Age = age;
+        PasswordHash = passhas;
+    }
+}
+
+public class UserDto
+{
+    public string Name;
+    public string Email;
+     public UserDto(string name, string email)
+    {
+        Name = name;
+        Email = email;
+    }
+}
+
 
