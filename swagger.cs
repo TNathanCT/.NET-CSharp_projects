@@ -1,94 +1,89 @@
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Mvc.Routing;
+
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services for minimal API + Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
 
-// Enable Swagger UI always (for learning)
-app.UseSwagger();
-app.UseSwaggerUI();
-
-app.UseHttpsRedirection();
-
-
-
-
-// =============== In-memory "database" ===============
-
-var todos = new List<TodoItem>
+var habits = new List<Habit>()
 {
-    new TodoItem { Id = 1, Description = "Learn .NET minimal APIs", Completed = false, DueDate = DateTime.Today.AddDays(3) },
-    new TodoItem { Id = 2, Description = "Hook up console app to this API", Completed = false },
-    new TodoItem { Id = 3, Description = "Play with HTTP clients", Completed = false, DueDate = DateTime.Today.AddDays(7) }
+    new Habit(0, "Brush your teeth", 2),
+    new Habit(1, "Floss", 1),
+    new Habit(2, "Mouthwash", 1)
 };
 
-int NextId() => todos.Count == 0 ? 1 : todos.Max(t => t.Id) + 1;
 
-// GET /todos
-app.MapGet("/todos", () => Results.Ok(todos));
 
-// GET /todos/{id}
-app.MapGet("/todos/{id:int}", (int id) =>
+//I never used IResult before. I had to look it up on learn.Microsoft
+app.MapGet("/Habit/{id}", IResult (int id) =>
 {
-    var todo = todos.FirstOrDefault(t => t.Id == id);
-    return todo is null ? Results.NotFound() : Results.Ok(todo);
+    var habit = habits.FirstOrDefault(h => h.id == id);
+    if(habit is null)
+    {
+        Console.WriteLine("400 Error");
+        return Results.NotFound(); //404 error
+    }
+    Console.WriteLine("200 Success");
+    return Results.Ok(habit);
 });
 
-// POST /todos
-app.MapPost("/todos", (TodoItem input) =>
+//I didn't know this. I had to look it up on learn.Microsoft
+//Cannot implicitly convert type 'Microsoft.AspNetCore.Http.IResult' to 'int' -> I was stuck on that issue, and I had to use some chatgpt to help
+//what is commented out was the original idea -> use the Console.Readline() to get user input and then use post
+
+app.MapPost("/Habit", (HabitCreateRequest request) =>
 {
-    input.Id = NextId();
-    todos.Add(input);
-    return Results.Created($"/todos/{input.Id}", input);
+    int newid = habits.Count == 0 ? 1 : habits.Max(h => h.id)+1;
+    var newhabit = new Habit(newid, request.taskname, request.times);
+    Console.WriteLine("201 Success : " + newhabit.task + " created");
+    return Results.Created($"/Habit/{newhabit.id}", newhabit);
+   
+//tryagain:
+//    Console.WriteLine("\n", "Please add the task: ");
+//    string taskname = Console.ReadLine();
+//    Console.WriteLine("\n", "Please say how many time: ");
+
+//    int times;
+//    times = Int32.TryParse(Console.ReadLine(), out times) ? times : 0;
+    
+//    int newid = habits.Count + 1;
+//    if (string.IsNullOrEmpty(taskname))
+//    {
+//        goto tryagain;
+//    }
+//  var newhabit = new Habit(newid, taskname, times);
+//    Uri url = new Uri($"/Habit/{newhabit.id}");
+//    return Results.Created(url, newhabit);
 });
 
-// PUT /todos/{id}
-app.MapPut("/todos/{id:int}", (int id, TodoItem input) =>
+
+
+app.MapPut("/Habit/{id}", IResult (int id, HabitCreateRequest request) =>
 {
-    var existing = todos.FirstOrDefault(t => t.Id == id);
-    if (existing is null)
-        return Results.NotFound();
-
-    existing.Description = input.Description;
-    existing.Completed   = input.Completed;
-    existing.DueDate     = input.DueDate;
-
-    return Results.Ok(existing);
+    var index = habits.FindIndex(h => h.id == id);
+    if(index == -1)
+    {
+        Console.WriteLine("404 Error - does not exist");
+        return Results.NotFound(); //404 error
+    }
+    habits[index] = habits[index] with {task = request.taskname, timesperday = request.times};
+    return Results.Ok( habits[id]);
 });
 
-// POST /todos/{id}/complete
-app.MapPost("/todos/{id:int}/complete", (int id) =>
+app.MapDelete("/Habit/{id}", IResult(int id) =>
 {
-    var todo = todos.FirstOrDefault(t => t.Id == id);
-    if (todo is null)
-        return Results.NotFound();
-
-    todo.Completed = true;
-    return Results.Ok(todo);
+    
+    var removed = habits.RemoveAll(h => h.id == id);
+    return removed == 0 ? Results.NotFound() : Results.NoContent();
 });
 
-// DELETE /todos/{id}
-app.MapDelete("/todos/{id:int}", (int id) =>
-{
-    var todo = todos.FirstOrDefault(t => t.Id == id);
-    if (todo is null)
-        return Results.NotFound();
 
-    todos.Remove(todo);
-    return Results.NoContent();
-});
+
+
+
 
 
 app.Run();
 
-// =============== Model ===============
+record Habit(int id, string task, int timesperday);
+public record HabitCreateRequest(int id, string taskname,int times);
 
-public class TodoItem
-{
-    public int Id { get; set; }
-    public string Description { get; set; } = "";
-    public bool Completed { get; set; }
-    public DateTime? DueDate { get; set; }
-}
