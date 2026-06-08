@@ -29,7 +29,6 @@ app.MapGet("/Habit/{id}", IResult (int id) =>
 //I didn't know this. I had to look it up on learn.Microsoft
 //Cannot implicitly convert type 'Microsoft.AspNetCore.Http.IResult' to 'int' -> I was stuck on that issue, and I had to use some chatgpt to help
 //what is commented out was the original idea -> use the Console.Readline() to get user input and then use post
-
 app.MapPost("/Habit", (HabitCreateRequest request) =>
 {
     int newid = habits.Count == 0 ? 1 : habits.Max(h => h.id)+1;
@@ -56,7 +55,6 @@ app.MapPost("/Habit", (HabitCreateRequest request) =>
 });
 
 
-
 app.MapPut("/Habit/{id}", IResult (int id, HabitCreateRequest request) =>
 {
     var index = habits.FindIndex(h => h.id == id);
@@ -75,11 +73,6 @@ app.MapDelete("/Habit/{id}", IResult(int id) =>
     var removed = habits.RemoveAll(h => h.id == id);
     return removed == 0 ? Results.NotFound() : Results.NoContent();
 });
-
-
-
-
-
 
 
 app.Run();
