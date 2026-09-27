@@ -4,38 +4,34 @@ namespace InheritanceApp
     {
         static void Main(string[] args)
         {
-            Collie mydog = new Collie();
-            mydog.Eat();
-            mydog.Bark();
-            mydog.Running();
-
-
+            Employee newEmployee = new Employee("Joe", 26);
+            newEmployee.DisplayPersonDetails();
         }
     }
 
-    class Animal
+
+    public class Person
     {
-        public void Eat()
+        public string Name { get; private set; }
+        public int Age { get; private set; }
+
+        public Person(string _name, int _age)
         {
-            Console.WriteLine("Eating");
+            Name = _name;
+            Age = _age;
+            Console.WriteLine("This is a constructor");
+        }
+        public void DisplayPersonDetails()
+        {
+            Console.WriteLine($"Name : {Name}, Age: {Age}.");
         }
     }
 
-    class Dog : Animal
+    public class Employee : Person
     {
-        public void Bark()
+        public Employee(string name, int age) : base(name, age)
         {
-            Console.WriteLine("Woof");
+
         }
     }
-
-
-    class Collie : Dog
-    {
-        public void Running()
-        {
-            Console.WriteLine("Zoomies");
-        }
-    }
-
 }
