@@ -4,8 +4,8 @@ namespace InheritanceApp
     {
         static void Main(string[] args)
         {
-            Employee newEmployee = new Employee("Joe", 26);
-            newEmployee.DisplayPersonDetails();
+            Employee newEmployee = new Employee("Joe", 26, "Sales Rep", 12345);
+            newEmployee.DisplayEmployeeInfo();
         }
     }
 
@@ -27,11 +27,25 @@ namespace InheritanceApp
         }
     }
 
+
+
+
     public class Employee : Person
     {
-        public Employee(string name, int age) : base(name, age)
-        {
+        public string JobTitle { get; private set; }
+        public int EmployeeID{ get; private set; }
 
+        public Employee(string name, int age, string jobtitle, int id) : base(name, age)
+        {
+            JobTitle = jobtitle;
+            EmployeeID = id;
+        }
+
+
+        public void DisplayEmployeeInfo()
+        {
+            DisplayPersonDetails();
+            Console.WriteLine($"The Employee with the ID : {EmployeeID} works as a {JobTitle}.");
         }
     }
 }
