@@ -28,8 +28,6 @@ namespace InheritanceApp
     }
 
 
-
-
     public class Employee : Person
     {
         public string JobTitle { get; private set; }
