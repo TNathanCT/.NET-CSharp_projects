@@ -1,6 +1,6 @@
 namespace InheritanceApp
 {
-    public interface ILogger
+public interface ILogger
     {
         public void Log(string message);
     }
@@ -14,7 +14,7 @@ namespace InheritanceApp
             string directorypath = @"C:\Logs";
             string filepath = System.IO.Path.Combine(directorypath, "log.txt");
 
-            if (!Directory.Exists(filepath))
+            if (!Directory.Exists(directorypath))
             {
                 Directory.CreateDirectory(directorypath);
             }
@@ -32,7 +32,7 @@ namespace InheritanceApp
     }
 
 
-    public class ApplicationClass
+    public class Application
     {
         private readonly ILogger loggerinterface;
 
